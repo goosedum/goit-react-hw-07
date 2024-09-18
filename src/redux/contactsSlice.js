@@ -1,89 +1,71 @@
-import { createSelector, createSlice } from '@reduxjs/toolkit';
-import { fetchContacts, deleteContact, addContact } from './contactsOps';
-import { selectNameFilter } from './filtersSlice';
+import { createSelector, createSlice } from "@reduxjs/toolkit";
+import { addContact, deleteContact, fetchContacts } from "./contactsOps";
+import { selectNameFilter } from "./filtersSlice";
 
 const INITIAL_STATE = {
-  items: [],
-  isLoading: false,
-  error: null,
+  contacts: {
+    items: [],
+    loading: false,
+    error: null,
+  },
 };
 
 const contactsSlice = createSlice({
-  name: 'contacts',
+  name: "contacts",
   initialState: INITIAL_STATE,
-  reducers: {},
-
-  // Обробка actions які повертає санка
-  extraReducers: builder => {
-    return builder
-      .addCase(fetchContacts.pending, state => {
-        state.isLoading = true;
-        state.error = null;
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchContacts.pending, (state) => {
+        state.contacts.loading = true;
+        state.contacts.error = null;
       })
       .addCase(fetchContacts.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.items = action.payload;
+        state.contacts.loading = false;
+        state.contacts.items = action.payload;
       })
-      .addCase(fetchContacts.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
+      .addCase(fetchContacts.rejected, (state) => {
+        state.contacts.loading = false;
+        state.contacts.error = true;
       })
-
-      .addCase(deleteContact.pending, state => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(deleteContact.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.items = state.items.filter(
-          contact => contact.id !== action.payload.id
-        );
-      })
-      .addCase(deleteContact.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
-
-      .addCase(addContact.pending, state => {
-        state.isLoading = true;
-        state.error = null;
+      .addCase(addContact.pending, (state) => {
+        state.contacts.loading = true;
+        state.contacts.error = null;
       })
       .addCase(addContact.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.items.unshift(action.payload);
+        state.contacts.loading = false;
+        state.contacts.items.push(action.payload);
       })
-      .addCase(addContact.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
+      .addCase(addContact.rejected, (state) => {
+        state.contacts.loading = false;
+        state.contacts.error = true;
+      })
+      .addCase(deleteContact.pending, (state) => {
+        state.contacts.loading = true;
+        state.contacts.error = null;
+      })
+      .addCase(deleteContact.fulfilled, (state, action) => {
+        state.contacts.loading = false;
+        state.contacts.items = state.contacts.items.filter(
+          (item) => item.id !== action.payload.id
+        );
+      })
+      .addCase(deleteContact.rejected, (state) => {
+        state.contacts.loading = false;
+        state.contacts.error = true;
       });
   },
 });
 
-// --------------- Reducer
-export const contactsReducer = contactsSlice.reducer;
-
-// --------------- Selector`s functions
-export const selectContacts = state => {
-  return state.contacts.items;
-};
-
-export const selectLoader = state => {
-  return state.contacts.isLoading;
-};
-
-export const selectError = state => {
-  return state.contacts.error;
-};
-
+export const selectContacts = (state) => state.contacts.contacts.items;
+export const selectLoading = (state) => state.contacts.contacts.loading;
+export const selectError = (state) => state.contacts.contacts.error;
 
 export const selectFilteredContacts = createSelector(
-  // Масив вхідних селекторів
   [selectContacts, selectNameFilter],
-  // Функція перетворювач
-  (contacts, filtredValue) => {
-    return contacts.filter(contact => {
-      return contact.name.toLowerCase().includes(filtredValue.toLowerCase());
-    });
-  }
+  (contacts, filterValue) =>
+    contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(filterValue.toLowerCase())
+    )
 );
-// ----------------------------------------------------------------------------------/
+
+export const contactsReducer = contactsSlice.reducer;

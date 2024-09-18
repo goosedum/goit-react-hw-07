@@ -1,37 +1,35 @@
-import SearchBox from './components/SearchBox/SearchBox';
-import ContactList from './components/ContactList/ContactList';
-import ContactForm from './components/ContactForm/ContactForm';
-import Loader from './components/Loader/Loader';
-import './App.css';
+import { useDispatch, useSelector } from "react-redux";
 
-import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import {selectLoader} from './redux/contactsSlice';
-import { fetchContacts } from './redux/contactsOps';
+import ContactList from "./components/ContactList/ContactList";
+import SearchBox from "./components/SearchBox/SearchBox";
+import ContactForm from "./components/ContactForm/ContactForm";
+import Loader from "./components/Loader/Loader";
+import ErrorMessage from "./components/ErrorMessage/ErrorMessage";
 
-const App = () => {
-  //-------------------------------------- /
+import "./App.css";
+import { useEffect } from "react";
+import { fetchContacts } from "./redux/contactsOps";
+import { selectError, selectLoading } from "./redux/contactsSlice";
+
+function App() {
   const dispatch = useDispatch();
+  const isLoading = useSelector(selectLoading);
+  const isError = useSelector(selectError);
 
-  // Задіспатчили санку після рендеру сторінки
   useEffect(() => {
     dispatch(fetchContacts());
   }, [dispatch]);
 
-  // Підписалися на state  зі Store
-  const isLoading = useSelector(selectLoader);
- 
-  //-------------------------------------- /
-
   return (
-    <>
+    <div>
       <h1>Phonebook</h1>
       <ContactForm />
       <SearchBox />
       {isLoading && <Loader />}
+      {isError && <ErrorMessage />}
       <ContactList />
-    </>
+    </div>
   );
-};
+}
 
 export default App;
